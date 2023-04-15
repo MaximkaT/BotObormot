@@ -1,0 +1,6 @@
+naff>=1.0.0
+python-dotenv>=0.20.0
+orjson>=3.6.7
+openai
+requests
+Pillow

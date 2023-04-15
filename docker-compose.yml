@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  another_pelmeon_bot:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - another_pelmeon_bot-network
+    restart:
+      always
+
+networks:
+  another_pelmeon_bot-network:
