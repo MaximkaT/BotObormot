@@ -19,7 +19,7 @@ class ChatGPTDLC(Extension):
     default_id = 1046772205876424794
     REQUEST_STRING = '**Запрос:**\n'
     MENTION_TEXT_SEPARATOR = ':\n'
-    BOT_IMAGE = ''
+    BOT_IMAGE = 'https://media.discordapp.net/attachments/1046772205876424794/1092428709300011039/CineOP_dumpling_simplified_logo_simple_forms_a7fd2df5-94e4-4538-b193-e55fa249702a.png?width=676&height=676'
     BOT_NAME = 'Бот-обормот'
     EMBED_COLOR = 'white'
 
@@ -27,36 +27,31 @@ class ChatGPTDLC(Extension):
     """ 
     arrange every message to bot form 
     {'user': 'user/assistant',
-     'content': user message with cutted command prefix/bot message with cutted user mention}
+     'content': user message / bot message}
     """
     def embToGPT(self, message: Message):
         embs: Embed = message.embeds[0]
         role = 'user' if embs.title == 'ВОПРОС' else 'assistant'
         mes = embs.description
         res = {'role': role, 'content': mes}
-        # print(res)
         return res
     
 
     # sends the message to the openai api. While the message is being processed, print wait message
-    async def reply(self, ctx, messages, mesAuthor=None):
+    async def reply(self, ctx, messages: list, mesAuthor=None):
         author = ctx.author if mesAuthor is None else mesAuthor
 
-        # q_embed_author = EmbedAuthor(name=str(author), icon_url=author.avatar.as_url(size=128))
-        # q_embed = Embed(title='ВОПРОС', description=messages[-1]['content'], color=(256, 0, 0), author=q_embed_author)
-        # await ctx.send(embed=q_embed)
-
-
-
+        q_embed_author = EmbedAuthor(name=str(author), icon_url=author.avatar.as_url(size=128))
+        q_embed = Embed(title='ВОПРОС', description=messages[-1]['content'], color=(256, 0, 0), author=q_embed_author)
+        await ctx.send(embed=q_embed)
         
-        ans = await ctx.send('Обработка запроса...')
         # reply = chatGptReuqest(messages)
         reply = 'Иди нахрен'
-        await ans.delete()
+
         emb_author = EmbedAuthor(name=self.BOT_NAME, icon_url=self.BOT_IMAGE)
         res_embed = Embed(title='ОТВЕТ', description=reply, author=emb_author, color=(0, 256, 0))
+
         await ctx.send(f'{author.mention}', embed = res_embed)
-        return
     #------------------------------------------------------------------------------------------------
 
     @slash_command(name="chat", description="Позволяет общаться с искуственным интеллектом на базе ChatGPT")
@@ -65,8 +60,6 @@ class ChatGPTDLC(Extension):
                   required=True,
                   opt_type=OptionTypes.STRING)
     async def chat_gpt(self, ctx: InteractionContext, *, scopes=[default_id], prompt: str):
-
-        
 
         # creating new thread if message is in the channel for bot threads
         if ctx.channel == self.bot_channel:
@@ -80,31 +73,30 @@ class ChatGPTDLC(Extension):
             # send answer from chat gpt to first user message
             arranged_message = {'role': 'user', 'content':prompt}
             await self.reply(new_thread, [arranged_message], ctx.author)
+            await ctx.send(content = 'Создана ветка для беседы с чат-ботом. Если вы хотите одноразового ответа в любом месте, выбирайте /prompt.', ephemeral=True)
             print('Ответ отправлен')
         
         #if user already typing in bot thread, answer, using context of the thread
         elif ctx.channel.name.startswith('bot '):
 
-            q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
-            q_embed = Embed(title='ВОПРОС', description=messages[-1]['content'], color=(256, 0, 0), author=q_embed_author)
-            await ctx.send(embed=q_embed)
             # make conversation history from user messages, that starts with slash command
             # and bot messages
             messages = [message async for message in ctx.channel.history(limit=200) if
                         message.author == self.bot.user]
             
-            print([mes.content for mes in messages])
-
             # sort message list from first to last
             messages.reverse()
 
             # reformate messages for bot
             messages = list(map(self.embToGPT, messages))
-            print(messages)
+            # print(messages)
+            messages.append({'role': 'user', 'content': prompt})
 
+            await ctx.defer()
             # reply to user with bot context answer
             await self.reply(ctx, messages)
             print('Ответ отправлен')
+        
         
 
 
