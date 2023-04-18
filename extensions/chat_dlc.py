@@ -1,27 +1,22 @@
-import openai
 from core.base import CustomClient
 from utils.GPT import *
 from naff import (
-    Button,
-    ButtonStyles,
-    ComponentContext, Embed, EmbedAuthor,
+    Embed, EmbedAuthor,
     Extension, InteractionContext,
-    component_callback, slash_command, slash_option,
-    SlashCommandOption, OptionTypes,
+    slash_command, slash_option, check,
+    OptionTypes, Context,
     AutoArchiveDuration, Message,
-    Color, COLOR_TYPES,
+    ThreadChannel,
+    User, EmbedField
 )
 
 
 class ChatGPTDLC(Extension):
-    bot: CustomClient
-    bot_channel = None
-    default_id = 1046772205876424794
-    REQUEST_STRING = '**Запрос:**\n'
-    MENTION_TEXT_SEPARATOR = ':\n'
-    BOT_IMAGE = 'https://media.discordapp.net/attachments/1046772205876424794/1092428709300011039/CineOP_dumpling_simplified_logo_simple_forms_a7fd2df5-94e4-4538-b193-e55fa249702a.png?width=676&height=676'
-    BOT_NAME = 'Бот-обормот'
-    EMBED_COLOR = 'white'
+
+    def __init__(self, bot, config):
+        self.bot = bot,
+        self.bot_channel = None
+        self.CONFIG = config
 
     #--------------------------------------------Utilities-------------------------------------------
     """ 
@@ -48,18 +43,36 @@ class ChatGPTDLC(Extension):
         # reply = chatGptReuqest(messages)
         reply = 'Иди нахрен'
 
-        emb_author = EmbedAuthor(name=self.BOT_NAME, icon_url=self.BOT_IMAGE)
+        emb_author = EmbedAuthor(name=self.CONFIG['bot_name'], icon_url=self.CONFIG['bot_image_url'])
         res_embed = Embed(title='ОТВЕТ', description=reply, author=emb_author, color=(0, 256, 0))
 
         await ctx.send(f'{author.mention}', embed = res_embed)
     #------------------------------------------------------------------------------------------------
+
+
+    @slash_command(name="prompt", description="Задайте вопрос, получите ответ")
+    @slash_option(name="prompt",
+                  description="текст запроса",
+                  required=True,
+                  opt_type=OptionTypes.STRING)
+    async def prompt(self, ctx: InteractionContext, *, prompt: str):
+        arranged_message = {'role': 'user', 'content':prompt}
+        q_emb_f = EmbedField(name="В:", value = prompt, inline=True)
+        # reply = chatGptReuqest(arranged_message)
+        reply = 'Иди нахрен'
+        a_emb_f = EmbedField(name="О:", value = reply, inline=False)
+        q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
+        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=[q_emb_f, a_emb_f])
+        await ctx.send(content=ctx.author.mention, embed=ans_emb)
+        # await self.reply(ctx, [arranged_message], ctx.author)
+
 
     @slash_command(name="chat", description="Позволяет общаться с искуственным интеллектом на базе ChatGPT")
     @slash_option(name="prompt",
                   description="текст запроса",
                   required=True,
                   opt_type=OptionTypes.STRING)
-    async def chat_gpt(self, ctx: InteractionContext, *, scopes=[default_id], prompt: str):
+    async def chat_gpt(self, ctx: InteractionContext, *, prompt: str):
 
         # creating new thread if message is in the channel for bot threads
         if ctx.channel == self.bot_channel:
@@ -96,15 +109,37 @@ class ChatGPTDLC(Extension):
             # reply to user with bot context answer
             await self.reply(ctx, messages)
             print('Ответ отправлен')
+        else:
+            await ctx.send(content="Неправильный канал для бесед", ephemeral=True)
         
-        
+    
+    @slash_command(name="thanks", description='Закрывает ветку и выгоняет всех участников')
+    async def thanks(self, ctx: InteractionContext):
+        if ctx.channel.name.startswith('bot '):
+            chann: ThreadChannel = ctx.channel
+            for mem in await chann.fetch_members():
+                us: User = mem.get_user()
+                await chann.remove_member(us)
+            await ctx.send(content="Спасибо за беседу. До новых встреч.", ephemeral=True)
+            await chann.archive()
 
+    
+    @slash_command(name='delete', description='Удаляет ветку общения с ботом')
+    async def delete(self, ctx: InteractionContext):
+        if ctx.channel.name.startswith('bot '):
+            await ctx.channel.delete()
+        await ctx.channel.parent_channel.delete_message(await ctx.channel.parent_channel.fetch_message(ctx.channel.id))
 
+    async def my_check(ctx: Context):
+        return True
+
+    @check(check=my_check)
     @slash_command(name='init_channel', description='Устанавливает канал для общения с ботом')
     async def init_channel(self, ctx: InteractionContext):
         self.bot_channel = ctx.channel
-        # await ctx.message.delete()
         await ctx.send('Канал установлен')
+        for role in ctx.author.roles:
+            print(role.name, role.id)
         print(f'new channel - {self.bot_channel}')
 
 
@@ -112,7 +147,7 @@ class ChatGPTDLC(Extension):
 
 
 
-def setup(bot: CustomClient):
+def setup(bot: CustomClient, config: dict):
     """Let naff load the extension"""
-
-    ChatGPTDLC(bot)
+    ChatGPTDLC(bot, config)
+    

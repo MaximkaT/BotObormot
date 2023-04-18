@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+bot_env/
+unwanted_extensions/
+
 # Distribution / packaging
 .Python
 build/

@@ -3,7 +3,7 @@ import os
 from core.base import CustomClient
 
 
-def load_extensions(bot: CustomClient):
+def load_extensions(bot: CustomClient, config: dict):
     """Automatically load all extension in the ./extensions folder"""
 
     bot.logger.info("Loading Extensions...")
@@ -18,6 +18,6 @@ def load_extensions(bot: CustomClient):
                 python_import_path = path.replace("/", ".").replace("\\", ".")
 
                 # load the extension
-                bot.load_extension(python_import_path)
+                bot.load_extension(python_import_path, config=config)
 
     bot.logger.info(f"< {len(bot.interactions.get(0, []))} > Global Interactions Loaded")
