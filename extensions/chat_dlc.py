@@ -39,14 +39,14 @@ class ChatGPTDLC(Extension):
 
         q_embed_author = EmbedAuthor(name=str(author), icon_url=author.avatar.as_url(size=128))
         q_embed = Embed(title='ВОПРОС', description=messages[-1]['content'], color=(256, 0, 0), author=q_embed_author)
-        await ctx.send(embed=q_embed)
+        
         
         reply = chatGptReuqest(messages)
         # reply = 'Иди нахрен'
 
         emb_author = EmbedAuthor(name=self.CONFIG['bot_name'], icon_url=self.CONFIG['bot_image_url'])
         res_embed = Embed(title='ОТВЕТ', description=reply, author=emb_author, color=(0, 256, 0))
-
+        await ctx.send(embed=q_embed)
         await ctx.send(f'{author.mention}', embed = res_embed)
     #------------------------------------------------------------------------------------------------
 
