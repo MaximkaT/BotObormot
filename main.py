@@ -14,7 +14,7 @@ config = {
     'bot_name': 'Бот-обормот',
     'admin_role': 'Тимлид',
     'bot_image_url': 'https://media.discordapp.net/attachments/1046772205876424794/1092428709300011039/CineOP_dumpling_simplified_logo_simple_forms_a7fd2df5-94e4-4538-b193-e55fa249702a.png?width=676&height=676',
-    'server_meet_url': 'https://discord.gg/z4p8h8Xybk'
+    'server_meet_url': 'https://discord.gg/2HK5XBfMkn'
 }
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ class Midjourney(Extension):
     
     def __init__(self, bot, config):
         self.bot = bot
+        print('picture', self.bot)
         self.CONFIG = config
 
 

@@ -13,8 +13,9 @@ from naff import (
 
 class ChatGPTDLC(Extension):
 
+
     def __init__(self, bot, config):
-        self.bot = bot,
+        self.bot = bot
         self.bot_channel = None
         self.CONFIG = config
 
@@ -40,8 +41,8 @@ class ChatGPTDLC(Extension):
         q_embed = Embed(title='ВОПРОС', description=messages[-1]['content'], color=(256, 0, 0), author=q_embed_author)
         await ctx.send(embed=q_embed)
         
-        # reply = chatGptReuqest(messages)
-        reply = 'Иди нахрен'
+        reply = chatGptReuqest(messages)
+        # reply = 'Иди нахрен'
 
         emb_author = EmbedAuthor(name=self.CONFIG['bot_name'], icon_url=self.CONFIG['bot_image_url'])
         res_embed = Embed(title='ОТВЕТ', description=reply, author=emb_author, color=(0, 256, 0))
@@ -57,14 +58,15 @@ class ChatGPTDLC(Extension):
                   opt_type=OptionTypes.STRING)
     async def prompt(self, ctx: InteractionContext, *, prompt: str):
         arranged_message = {'role': 'user', 'content':prompt}
-        q_emb_f = EmbedField(name="В:", value = prompt, inline=True)
-        # reply = chatGptReuqest(arranged_message)
-        reply = 'Иди нахрен'
-        a_emb_f = EmbedField(name="О:", value = reply, inline=False)
+        # q_emb_f = EmbedField(name="В:", value = prompt, inline=True)
+        await ctx.defer()
+        reply = chatGptReuqest([arranged_message])
+        # reply = 'Иди нахрен'
+        # a_emb_f = EmbedField(name="О:", value = reply, inline=False)
+        reply = f'**Вопрос:** \n{prompt}\n\n**Ответ:** \n{reply}'
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
-        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=[q_emb_f, a_emb_f])
+        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, description=reply)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
-        # await self.reply(ctx, [arranged_message], ctx.author)
 
 
     @slash_command(name="chat", description="Позволяет общаться с искуственным интеллектом на базе ChatGPT")
@@ -86,14 +88,15 @@ class ChatGPTDLC(Extension):
             # send answer from chat gpt to first user message
             arranged_message = {'role': 'user', 'content':prompt}
             await self.reply(new_thread, [arranged_message], ctx.author)
-            await ctx.send(content = 'Создана ветка для беседы с чат-ботом. Если вы хотите одноразового ответа в любом месте, выбирайте /prompt.', ephemeral=True)
-            print('Ответ отправлен')
+            # await ctx.send(content = 'Создана ветка для беседы с чат-ботом. Если вы хотите одноразового ответа в любом месте, выбирайте /prompt.', ephemeral=True)
+            # print('Ответ отправлен')
         
         #if user already typing in bot thread, answer, using context of the thread
         elif ctx.channel.name.startswith('bot '):
-
+            print(type(self.bot))
             # make conversation history from user messages, that starts with slash command
             # and bot messages
+
             messages = [message async for message in ctx.channel.history(limit=200) if
                         message.author == self.bot.user]
             
