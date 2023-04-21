@@ -1,5 +1,4 @@
 naff>=1.0.0
-json
 orjson>=3.6.7
 openai
 requests
