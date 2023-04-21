@@ -1,5 +1,6 @@
 from core.base import CustomClient
 from utils.GPT import *
+from utils.BingAI import *
 from naff import (
     Embed, EmbedAuthor,
     Extension, InteractionContext,
@@ -64,6 +65,23 @@ class ChatGPTDLC(Extension):
         # reply = 'Иди нахрен'
         # a_emb_f = EmbedField(name="О:", value = reply, inline=False)
         reply = f'**Вопрос:** \n{prompt}\n\n**Ответ:** \n{reply}'
+        q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
+        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, description=reply)
+        await ctx.send(content=ctx.author.mention, embed=ans_emb)
+
+    @slash_command(name="bing", description="Задайте вопрос, получите ответ от BingAI")
+    @slash_option(name="bing",
+                  description="текст запроса",
+                  required=True,
+                  opt_type=OptionTypes.STRING)
+    async def bing(self, ctx: InteractionContext, *, bing: str):
+        #arranged_message = {'role': 'user', 'content':bing_prompt}
+        # q_emb_f = EmbedField(name="В:", value = prompt, inline=True)
+        await ctx.defer()
+        reply = await bing_chat(prompt=bing)
+        # reply = 'Иди нахрен'
+        # a_emb_f = EmbedField(name="О:", value = reply, inline=False)
+        reply = f'**Вопрос:** \n{bing}\n\n**Ответ:** \n{reply}'
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
         ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, description=reply)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
