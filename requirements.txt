@@ -3,3 +3,4 @@ orjson>=3.6.7
 openai
 requests
 Pillow
+EdgeGPT
