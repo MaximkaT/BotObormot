@@ -81,9 +81,11 @@ class ChatGPTDLC(Extension):
         reply = await bing_chat(prompt=bing)
         # reply = 'Иди нахрен'
         # a_emb_f = EmbedField(name="О:", value = reply, inline=False)
-        reply = f'**Вопрос:** \n{bing}\n\n**Ответ:** \n{reply}'
+        ans = f'**Вопрос:** \n{bing}\n\n**Ответ:** \n{reply[0]}'
+        answer = EmbedField(name='1',value=ans, inline=False)
+        urls = EmbedField(name='2',value=reply[1], inline=False)
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
-        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, description=reply)
+        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=[answer, urls])
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
 
 
