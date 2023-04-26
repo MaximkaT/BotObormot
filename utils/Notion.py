@@ -1,8 +1,8 @@
 from notionai import NotionAI
-from notionai.enums import TopicEnum
 import pathlib as pl
 import json
 
+# see NotionAI with f12
 class NotionAi(NotionAI):
     def __init__(self, model: str = 'openai-3') -> None:
         path = pl.Path(pl.Path.cwd(),'keys.json')
@@ -14,6 +14,3 @@ class NotionAi(NotionAI):
         self.model = model
         self.is_space_permission = False
         self.url = "https://www.notion.so/api/v3/getCompletion"
-
-ai = NotionAi()
-print(ai.blog_post('Ai in 2023'))
