@@ -13,7 +13,7 @@ import openai
 
 if __name__ == "__main__":
     # get keys and tokens for a bot
-    with open('keys_debug_bot.json') as keys_file:
+    with open('./keys.json') as keys_file:
         settings = json.load(keys_file)
     config = settings['config']
 

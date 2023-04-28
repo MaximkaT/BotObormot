@@ -5,7 +5,7 @@ from naff import (
     Embed, EmbedAuthor,
     Extension, InteractionContext,
     slash_command, slash_option, check,
-    OptionTypes, Context,
+    SlashCommandChoice, OptionTypes, Context,
     AutoArchiveDuration, Message,
     ThreadChannel,
     User, EmbedField
@@ -52,7 +52,12 @@ class ChatGPTDLC(Extension):
     #------------------------------------------------------------------------------------------------
 
 
-    @slash_command(name="prompt", description="Задайте вопрос, получите ответ")
+    @slash_command(
+            name="prompt",
+            description="Одноразовый ответ на вопрос, можно задать в любом месте.",
+            sub_cmd_name="gpt3",
+            sub_cmd_description="Вопрос к ChatGPT на основе GPT 3.5",
+    )
     @slash_option(name="prompt",
                   description="текст запроса",
                   required=True,
@@ -69,24 +74,48 @@ class ChatGPTDLC(Extension):
         ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, description=reply)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
 
-    @slash_command(name="bing", description="Задайте вопрос, получите ответ от BingAI")
-    @slash_option(name="bing",
+    @slash_command(
+            name="prompt",
+            description="Одноразовый ответ на вопрос, можно задать в любом месте.",
+            sub_cmd_name="bing",
+            sub_cmd_description="Вопрос к поисковику bing на основе GPT 4. Возвращает ответ и ссылки на страницы, откуда он был взят",
+    )
+    @slash_option(name="prompt",
                   description="текст запроса",
                   required=True,
                   opt_type=OptionTypes.STRING)
-    async def bing(self, ctx: InteractionContext, *, bing: str):
-        #arranged_message = {'role': 'user', 'content':bing_prompt}
-        # q_emb_f = EmbedField(name="В:", value = prompt, inline=True)
+    @slash_option(name="style", 
+                  description="стиль ответа",
+                  required=False,
+                  opt_type=OptionTypes.INTEGER,
+                  choices=[
+                      SlashCommandChoice(name="Сбалансированный", value=1),
+                      SlashCommandChoice(name="Креативный", value=2),
+                      SlashCommandChoice(name="Точный", value=3),
+                  ]
+                  )
+    async def bing(self, ctx: InteractionContext, *, prompt: str, style: int = 1):
         await ctx.defer()
-        reply = await bing_chat(prompt=bing)
-        # reply = 'Иди нахрен'
-        # a_emb_f = EmbedField(name="О:", value = reply, inline=False)
-        ans = f'**Вопрос:** \n{bing}\n\n**Ответ:** \n{reply[0]}'
-        answer = EmbedField(name='1',value=ans, inline=False)
-        urls = EmbedField(name='2',value=reply[1], inline=False)
+        reply = await bing_chat(prompt=prompt,
+                                style={1: ConversationStyle.balanced,
+                                       2: ConversationStyle.creative,
+                                       3: ConversationStyle.precise}.get(style))
+        fields = []
+        question = EmbedField(name="Вопрос:", value = prompt, inline=False)
+        fields.append(question)
+        if reply[0] != "":
+            repl = reformat_bing_text(reply)
+            answer = EmbedField(name='Ответ:',value=repl, inline=False)
+            fields.append(answer)
+        if reply[1] != "":
+            links = reformat_bing_links(reply[1])
+            urls = EmbedField(name='Источники:',value=links, inline=False)
+            fields.append(urls)
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
-        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=[answer, urls])
+        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=fields)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
+
+    
 
 
     @slash_command(name="chat", description="Позволяет общаться с искуственным интеллектом на базе ChatGPT")
@@ -107,8 +136,9 @@ class ChatGPTDLC(Extension):
 
             # send answer from chat gpt to first user message
             arranged_message = {'role': 'user', 'content':prompt}
+            await ctx.send(content = 'Создана ветка для беседы с чат-ботом. Если вы хотите одноразового ответа в любом месте, выбирайте /prompt.', ephemeral=True)
             await self.reply(new_thread, [arranged_message], ctx.author)
-            # await ctx.send(content = 'Создана ветка для беседы с чат-ботом. Если вы хотите одноразового ответа в любом месте, выбирайте /prompt.', ephemeral=True)
+            
             # print('Ответ отправлен')
         
         #if user already typing in bot thread, answer, using context of the thread
