@@ -19,6 +19,7 @@ class ChatGPTDLC(Extension):
         self.bot = bot
         self.bot_channel = None
         self.CONFIG = config
+        self.bing = BingAI()
 
     #--------------------------------------------Utilities-------------------------------------------
     """ 
@@ -96,21 +97,19 @@ class ChatGPTDLC(Extension):
                   )
     async def bing(self, ctx: InteractionContext, *, prompt: str, style: int = 1):
         await ctx.defer()
-        reply = await bing_chat(prompt=prompt,
+        reply = await self.bing.prompt_bing(prompt=prompt,
                                 style={1: ConversationStyle.balanced,
                                        2: ConversationStyle.creative,
                                        3: ConversationStyle.precise}.get(style))
         fields = []
         question = EmbedField(name="Вопрос:", value = prompt, inline=False)
         fields.append(question)
-        if reply[0] != "":
-            repl = reformat_bing_text(reply)
-            answer = EmbedField(name='Ответ:',value=repl, inline=False)
+        if reply != {}:
+            answer = EmbedField(name='Ответ:',value=reply['answer'], inline=False)
             fields.append(answer)
-        if reply[1] != "":
-            links = reformat_bing_links(reply[1])
-            urls = EmbedField(name='Источники:',value=links, inline=False)
+            urls = EmbedField(name='Источники:',value=reply['urls'], inline=False)
             fields.append(urls)
+            
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
         ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=fields)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)

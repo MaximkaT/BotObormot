@@ -139,3 +139,4 @@ dmypy.json
 # keys
 /keys.json
 /keys_debug_bot.json
+/keys_release.json
