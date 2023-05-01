@@ -15,6 +15,7 @@ async def bing_chat(prompt="", style=ConversationStyle.balanced):
     return response_dict['item']['messages'][1]['text'],urls
 
 
+
 def reformat_bing_text(inn: list):
     raw = inn[0]
     rawlist = re.split('\^\d+\^', raw)
@@ -25,6 +26,8 @@ def reformat_bing_text(inn: list):
         counter+=2
 
     return "".join(rawlist)
+
+
 
 def reformat_bing_links(inn: str):
     links = inn.split('\n')

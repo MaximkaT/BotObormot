@@ -44,9 +44,14 @@ class ChatGPTDLC(Extension):
         
         reply = chatGptReuqest(messages)
         # reply = 'Иди нахрен'
+        embs = []
+        while len(reply) > 1024:
+            embs.append(EmbedField(name='answer_field', value=reply[:1024]))
+            reply = reply[1024:]
+        embs.append(EmbedField(name='answer_field', value=reply))
 
         emb_author = EmbedAuthor(name=self.CONFIG['bot_name'], icon_url=self.CONFIG['bot_image_url'])
-        res_embed = Embed(title='ОТВЕТ', description=reply, author=emb_author, color=(0, 256, 0))
+        res_embed = Embed(title='ОТВЕТ', author=emb_author, color=(0, 256, 0), fields=embs)
         await ctx.send(embed=q_embed)
         await ctx.send(f'{author.mention}', embed = res_embed)
     #------------------------------------------------------------------------------------------------
@@ -61,17 +66,22 @@ class ChatGPTDLC(Extension):
     @slash_option(name="prompt",
                   description="текст запроса",
                   required=True,
-                  opt_type=OptionTypes.STRING)
+                  opt_type=OptionTypes.STRING,
+                  max_length=3000)
     async def prompt(self, ctx: InteractionContext, *, prompt: str):
         arranged_message = {'role': 'user', 'content':prompt}
-        # q_emb_f = EmbedField(name="В:", value = prompt, inline=True)
         await ctx.defer()
-        reply = chatGptReuqest([arranged_message])
-        # reply = 'Иди нахрен'
-        # a_emb_f = EmbedField(name="О:", value = reply, inline=False)
-        reply = f'**Вопрос:** \n{prompt}\n\n**Ответ:** \n{reply}'
+        repl = chatGptReuqest([arranged_message])
+
+        embs = []
+        embs.append(EmbedField(name='Ответ:', value=repl[:1024]))
+        repl = repl[1024:]
+        while len(repl) > 0:
+            embs.append(EmbedField(name='\n', value=repl[:1024]))
+            repl = repl[1024:]
+        
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
-        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, description=reply)
+        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=embs)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
 
     @slash_command(
@@ -100,13 +110,18 @@ class ChatGPTDLC(Extension):
                                 style={1: ConversationStyle.balanced,
                                        2: ConversationStyle.creative,
                                        3: ConversationStyle.precise}.get(style))
+        
         fields = []
-        question = EmbedField(name="Вопрос:", value = prompt, inline=False)
+        question = EmbedField(name="**Вопрос:**", value = prompt, inline=False)
         fields.append(question)
-        if reply[0] != "":
-            repl = reformat_bing_text(reply)
-            answer = EmbedField(name='Ответ:',value=repl, inline=False)
-            fields.append(answer)
+
+        repl = reformat_bing_text(reply)
+        fields.append(EmbedField(name='Ответ:', value=repl[:1024]))
+        repl = repl[1024:]
+        while len(repl) > 0:
+            fields.append(EmbedField(name='\n', value=repl[:1024]))
+            repl = repl[1024:]
+        
         if reply[1] != "":
             links = reformat_bing_links(reply[1])
             urls = EmbedField(name='Источники:',value=links, inline=False)
