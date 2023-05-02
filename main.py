@@ -10,10 +10,13 @@ from core.base import CustomClient
 from core.extensions_loader import load_extensions
 import openai
 
+import pathlib as pl
 
 if __name__ == "__main__":
+    path = pl.Path(pl.Path.cwd(), 'keys.json')
+
     # get keys and tokens for a bot
-    with open('keys.json') as keys_file:
+    with open(path) as keys_file:
         settings = json.load(keys_file)
     config = settings['config']
 
