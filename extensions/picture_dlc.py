@@ -1,6 +1,6 @@
 from core.base import CustomClient
 from utils.GPT import *
-from utils.BingAI import *
+from utils.Kandinsky import *
 from naff import (
     Embed, EmbedAuthor,
     Extension, InteractionContext,
@@ -15,6 +15,7 @@ class Midjourney(Extension):
     def __init__(self, bot, config):
         self.bot = bot
         self.CONFIG = config
+        self.replica = Replica()
 
 
     @slash_command(
@@ -30,7 +31,7 @@ class Midjourney(Extension):
         required=True
     )
     async def kandinskiy(self):
-        pass
+        
 
 
 

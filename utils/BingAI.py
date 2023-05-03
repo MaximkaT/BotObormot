@@ -54,21 +54,22 @@ class BingAI:
         hearders = {'headers':'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0'}
         for link_id in range(len(links)):
             link = links[link_id]
-            # try:
-            al = req.get(link, headers=hearders).text
-            title = al[al.find('<title>') + 7 : al.find('</title>')]
-            if title != "":
+            try:
+                al = req.get(link, headers=hearders).text
+                title = al[al.find('<title>') + 7 : al.find('</title>')]
+                if title != "":
+                    res.append(f'[{title}]({link})')
+                else:
+                    res.append(f'{link}')
+            except:
+                title = "Невалидная ссылка"
                 res.append(f'[{title}]({link})')
-            else:
-                res.append(f'{link}')
-            # except:
-            #     title = "Невалидная ссылка"
-            #     res.append(f'[{title}]({link})')
         return "\n".join(res)
 
-    """request to bing api through current thread
-    """
+    
     async def ask_bing(self, thread: Chatbot, prompt: str, style=ConversationStyle.balanced):
+        """request to bing api through current thread
+        """
         async for final, response_dict in thread.ask_stream(prompt=prompt, conversation_style=style):
             if final:
                 response = response_dict['item']['messages'][1]['text']
