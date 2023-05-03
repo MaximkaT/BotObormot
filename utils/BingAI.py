@@ -73,17 +73,7 @@ class BingAI:
         async for final, response_dict in thread.ask_stream(prompt=prompt, conversation_style=style):
             if final:
                 response = response_dict['item']['messages'][1]['text']
-                urls = '\n'.join([response_dict
-                                  ['item']
-                                  ['messages']
-                                  [1]
-                                  ['sourceAttributions']
-                                  [i]
-                                  ['seeMoreUrl'] for i in range(len(response_dict
-                                                                                ['item']
-                                                                                ['messages']
-                                                                                [1]
-                                                                                ['sourceAttributions']))])
+                urls = self.get_urls(response_dict)
                 return {
                     'answer':self.reformat_text(response, urls),
                     'urls':self.reformat_links(urls) if urls != '' else None

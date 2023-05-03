@@ -65,9 +65,9 @@ class ChatGPTDLC(Extension):
         q_embed = Embed(title='ВОПРОС', description=question, color=(256, 0, 0), author=q_embed_author)
 
         embs = []
-        while len(reply) > 4000:
-            embs.append(EmbedField(name='\n', value=reply[:4000]))
-            reply = reply[4000:]
+        while len(reply) > 1024:
+            embs.append(EmbedField(name='\n', value=reply[:1024]))
+            reply = reply[1024:]
         embs.append(EmbedField(name='\n', value=reply))
 
         emb_author = EmbedAuthor(name=self.CONFIG['bot_name'], icon_url=self.CONFIG['bot_image_url'])
@@ -95,11 +95,11 @@ class ChatGPTDLC(Extension):
         repl = chatGptReuqest([arranged_message])
 
         embs = []
-        embs.append(EmbedField(name='Ответ:', value=repl[:4000]))
-        repl = repl[4000:]
+        embs.append(EmbedField(name='Ответ:', value=repl[:1024]))
+        repl = repl[1024:]
         while len(repl) > 0:
-            embs.append(EmbedField(name='\n', value=repl[:4000]))
-            repl = repl[4000:]
+            embs.append(EmbedField(name='\n', value=repl[:1024]))
+            repl = repl[1024:]
         
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
         ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=embs)
@@ -139,11 +139,11 @@ class ChatGPTDLC(Extension):
         fields.append(question)
 
         repl = reply['answer']
-        fields.append(EmbedField(name='Ответ:', value=repl[:4000]))
-        repl = repl[4000:]
+        fields.append(EmbedField(name='Ответ:', value=repl[:1024]))
+        repl = repl[1024:]
         while len(repl) > 0:
-            fields.append(EmbedField(name='\n', value=repl[:4000]))
-            repl = repl[4000:]
+            fields.append(EmbedField(name='\n', value=repl[:1024]))
+            repl = repl[1024:]
         
         if reply['urls']:
             links = reply['urls']
