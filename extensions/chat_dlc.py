@@ -17,6 +17,7 @@ class ChatGPTDLC(Extension):
 
     def __init__(self, bot, config):
         self.bot = bot
+        self.FIELD_LEN = 1020
         self.bot_channel = None
         self.CONFIG = config
         self.bingBot = BingAI()
@@ -65,9 +66,9 @@ class ChatGPTDLC(Extension):
         q_embed = Embed(title='ВОПРОС', description=question, color=(256, 0, 0), author=q_embed_author)
 
         embs = []
-        while len(reply) > 1024:
-            embs.append(EmbedField(name='\n', value=reply[:1024]))
-            reply = reply[1024:]
+        while len(reply) > self.FIELD_LEN:
+            embs.append(EmbedField(name='\n', value=reply[:self.FIELD_LEN]))
+            reply = reply[self.FIELD_LEN:]
         embs.append(EmbedField(name='\n', value=reply))
 
         emb_author = EmbedAuthor(name=self.CONFIG['bot_name'], icon_url=self.CONFIG['bot_image_url'])
@@ -95,11 +96,11 @@ class ChatGPTDLC(Extension):
         repl = chatGptReuqest([arranged_message])
 
         embs = []
-        embs.append(EmbedField(name='Ответ:', value=repl[:1024]))
-        repl = repl[1024:]
+        embs.append(EmbedField(name='Ответ:', value=repl[:self.FIELD_LEN]))
+        repl = repl[self.FIELD_LEN:]
         while len(repl) > 0:
-            embs.append(EmbedField(name='\n', value=repl[:1024]))
-            repl = repl[1024:]
+            embs.append(EmbedField(name='\n', value=repl[:self.FIELD_LEN]))
+            repl = repl[self.FIELD_LEN:]
         
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
         ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=embs)
@@ -135,23 +136,28 @@ class ChatGPTDLC(Extension):
                                        3: ConversationStyle.precise}.get(style))
         
         fields = []
-        question = EmbedField(name="**Вопрос:**", value = prompt, inline=False)
+        question = EmbedField(name="Вопрос:", value = prompt, inline=False)
         fields.append(question)
 
         repl = reply['answer']
-        fields.append(EmbedField(name='Ответ:', value=repl[:1024]))
-        repl = repl[1024:]
+        descr = 'Ответ:\n' + repl[:4000]
+        repl = repl[4000:]
+        # fields.append(EmbedField(name='Ответ:', value=repl[:self.FIELD_LEN]))
+        # repl = repl[self.FIELD_LEN:]
         while len(repl) > 0:
-            fields.append(EmbedField(name='\n', value=repl[:1024]))
-            repl = repl[1024:]
+            fields.append(EmbedField(name='\n', value=repl[:self.FIELD_LEN]))
+            repl = repl[self.FIELD_LEN:]
         
         if reply['urls']:
-            links = reply['urls']
-            urls = EmbedField(name='Источники:',value=links, inline=False)
-            fields.append(urls)
+            links = reply['urls'].split('\n')
+            urls = []
+            urls.append(EmbedField(name='Источники:',value=links.pop(0), inline=True))
+            while len(links)>0:
+                urls.append(EmbedField(name='\n',value=links.pop(0), inline=True))
+            fields.extend(urls)
             
         q_embed_author = EmbedAuthor(name=str(ctx.author), icon_url=ctx.author.avatar.as_url(size=128))
-        ans_emb = Embed(color=(255, 255, 255), author=q_embed_author, fields=fields)
+        ans_emb = Embed(color=(255, 255, 255), description=descr, author=q_embed_author, fields=fields)
         await ctx.send(content=ctx.author.mention, embed=ans_emb)
 
     
