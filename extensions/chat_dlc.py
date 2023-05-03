@@ -136,14 +136,9 @@ class ChatGPTDLC(Extension):
                                        3: ConversationStyle.precise}.get(style))
         
         fields = []
-        question = EmbedField(name="Вопрос:", value = prompt, inline=False)
-        fields.append(question)
-
         repl = reply['answer']
-        descr = 'Ответ:\n' + repl[:4000]
-        repl = repl[4000:]
-        # fields.append(EmbedField(name='Ответ:', value=repl[:self.FIELD_LEN]))
-        # repl = repl[self.FIELD_LEN:]
+        descr = f'**Вопрос:\n{prompt}\n**Ответ:**\n{repl[:3500]}'
+        repl = repl[3500:]
         while len(repl) > 0:
             fields.append(EmbedField(name='\n', value=repl[:self.FIELD_LEN]))
             repl = repl[self.FIELD_LEN:]
